@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="title" content="Beyond Visibility: Persistent Graph Memory for Visual Social Navigation">
+  <meta name="description" content="SocialSTG: persistent spatio-temporal graph memory for visual social navigation.">
+  <meta name="keywords" content="visual social navigation, graph memory, embodied AI, pedestrian interaction, spatio-temporal graph">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="author" content="Anonymous Authors">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="SocialSTG — Anonymous Project Page">
+  <meta property="og:description" content="Persistent graph memory for visual social navigation beyond the camera field of view.">
+  <meta property="og:image" content="static/images/teaser.png">
+  <title>SocialSTG — Anonymous Project Page</title>
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="top">
+  <section class="hero hero-gradient">
+    <div class="hero-body">
+      <div class="container is-max-desktop has-text-centered">
+        <p class="eyebrow mb-4">ANONYMOUS SUBMISSION · DOUBLE-BLIND REVIEW</p>
+        <h1 class="title publication-title">Beyond Visibility: Persistent Graph Memory for Visual Social Navigation</h1>
+        <p class="is-size-5 publication-authors">Anonymous Authors</p>
+        <p class="is-size-5 publication-authors">Anonymous Institution</p>
+        <div class="blind-note mt-4"><i class="fas fa-eye-slash"></i><span>Author identities, affiliations, repository links, and dataset identifiers are withheld during review.</span></div>
+        <div class="buttons is-centered mt-5">
+          <a class="button is-dark is-rounded" href="static/pdfs/paper.pdf"><span class="icon"><i class="fas fa-file-pdf"></i></span><span>Anonymous Paper</span></a>
+          <button class="button is-rounded resource-button" disabled><span class="icon"><i class="fas fa-lock"></i></span><span>Code &amp; Data (Withheld)</span></button>
+          <a class="button is-light is-rounded" href="#results"><span class="icon"><i class="fas fa-chart-line"></i></span><span>Results</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section pt-0 anchor" id="teaser">
+    <div class="container is-max-desktop">
+      <figure class="paper-figure">
+        <img src="static/images/teaser.png" alt="A robot navigates around pedestrians while a persistent interaction graph retains human records." loading="eager">
+        <figcaption>Social navigation beyond visibility: a robot reasons over a persistent interaction graph containing the robot, goal, and visible or recently occluded pedestrians.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section soft-section anchor" id="abstract">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered"><div class="column is-four-fifths">
+        <h2 class="title is-3 has-text-centered section-heading">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>Pedestrians can remain relevant to navigation after leaving a robot's camera view. A visual policy therefore needs to use recent observations without treating missing or outdated information as current evidence. We present <strong>SocialSTG</strong>, a visual social-navigation framework with persistent spatio-temporal graph memory. A memory bank maintains pedestrian records and temporarily retains unmatched observations as latent human nodes. Edge-conditioned attention models their interactions with the robot and goal, while uncertainty-gated updates regulate how messages enter recurrent states associated with each record. The pooled graph representation is fused with the visual policy, and auxiliary tasks provide training signals for motion, visibility, and interaction cues. On Social-HM3D and zero-shot Social-MP3D, SocialSTG improves task completion and success-weighted efficiency over Falcon and classical planners while reducing human-collision episodes. Ablations support complementary roles for record retention, temporal gating, and graph input to the policy; motion features and graph-based auxiliary supervision mainly benefit completion and efficiency. Scene-specific adaptation in a reconstructed campus cafeteria yields further gains, with SocialSTG retaining an advantage over adapted Falcon. These gains do not extend uniformly to personal-space compliance. The results support persistent interaction memory as a useful addition to visual social navigation, while leaving the balance between goal progress and interpersonal clearance an open challenge.</p>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="section anchor" id="overview">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered section-heading">At a glance</h2>
+      <div class="metric-grid">
+        <div class="metric"><strong>56.03</strong><span>SR · Social-HM3D</span></div>
+        <div class="metric"><strong>49.07</strong><span>SPL · Social-HM3D</span></div>
+        <div class="metric"><strong>53.00</strong><span>SR · zero-shot Social-MP3D</span></div>
+        <div class="metric"><strong>8</strong><span>human records in memory</span></div>
+        <div class="metric"><strong>20</strong><span>retention updates</span></div>
+      </div>
+      <p class="has-text-centered table-note">SocialSTG extends a visual PointGoal policy with persistent record-indexed graph states. Retained pedestrian records remain available for up to 20 updates, while the graph branch can store up to 8 human nodes.</p>
+      <figure class="paper-figure">
+        <img src="static/images/architecture.png" alt="Overview of SocialSTG architecture with visual and graph streams, persistent memory, graph encoder, and auxiliary heads." loading="lazy">
+        <figcaption>Overview of SocialSTG. RGB-D observations feed parallel visual and graph streams; persistent pedestrian records are encoded by the spatio-temporal graph module before graph–visual fusion.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section soft-section anchor" id="method">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered section-heading">Method</h2>
+      <p class="has-text-centered table-note mb-6">The method separates record accessibility from recurrent interaction history. A memory bank decides which pedestrian records remain available, while record-indexed hidden states preserve learned temporal context across shifting graph slots.</p>
+      <div class="method-grid">
+        <article class="method-card"><span class="tagline">01 · DYNAMIC INTERACTION GRAPH</span><h3 class="title is-4">Remember people across observations</h3><p>At every step, the graph contains the robot, goal, and a bounded set of human records. YOLOv8n detections and depth-based position proxies update observed records; unmatched records become latent nodes and are removed only after the retention threshold.</p></article>
+        <article class="method-card"><span class="tagline">02 · UNCERTAINTY-GATED MEMORY</span><h3 class="title is-4">Filter messages before recurrence</h3><p>Spatial attention allocates relative importance across neighbors, while a separate sigmoid gate attenuates messages according to depth, association, occlusion, and latent-state uncertainty before they enter each node's recurrent state.</p></article>
+        <article class="method-card"><span class="tagline">03 · GRAPH–VISUAL FUSION</span><h3 class="title is-4">Expose interaction context to the policy</h3><p>Robot-query attention pools human and goal states into a graph summary. A zero-initialized residual projection adds this summary to the visual, goal, and previous-action representation before the policy LSTM.</p></article>
+        <article class="method-card"><span class="tagline">04 · AUXILIARY SUPERVISION</span><h3 class="title is-4">Train states for social interaction</h3><p>Human-node heads supervise short-horizon motion, visibility, conflict, and approach-time proxies. These training-only targets regularize the graph representation alongside PPO while padding and inactive slots remain masked.</p></article>
+      </div>
+      <figure class="paper-figure">
+        <img src="static/images/topology.png" alt="Persistence and expiry of human records across observed, retained, and expired states." loading="lazy">
+        <figcaption>Persistence and expiry of human records. Observed records are updated, unmatched records are retained as latent nodes, and records expire after the retention limit.</figcaption>
+      </figure>
+      <figure class="paper-figure">
+        <img src="static/images/stg_detail.png" alt="Spatio-temporal graph encoder with spatial attention, uncertainty gating, and node-wise recurrent memory." loading="lazy">
+        <figcaption>Spatio-temporal graph encoding module. Spatial graph attention aggregates interactions, and uncertainty-gated temporal message passing updates record-indexed recurrent states.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section anchor" id="results">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered section-heading">Experimental results</h2>
+      <p class="has-text-centered table-note">All metrics are percentages. SR requires an episode-local STOP within 0.2 m of the goal; HCR is human-collision rate and PSC is personal-space compliance at a 1 m separation threshold.</p>
+
+      <h3 class="title is-4 mt-6">Navigation on Social-HM3D and zero-shot Social-MP3D</h3>
+      <div class="result-table-wrap"><table class="result-table"><thead><tr><th>Dataset</th><th>Method</th><th>SR ↑</th><th>SPL ↑</th><th>STL ↑</th><th>PSC ↑</th><th>HCR ↓</th></tr></thead><tbody>
+        <tr><td rowspan="4">Social-HM3D</td><td>A*</td><td>45.26</td><td>44.41</td><td>45.25</td><td>90.15</td><td>54.28</td></tr>
+        <tr><td>ORCA</td><td>32.38</td><td>27.85</td><td>31.63</td><td class="best">92.92</td><td>36.43</td></tr>
+        <tr><td>Falcon</td><td>49.22</td><td>44.03</td><td>49.13</td><td>89.55</td><td>41.86</td></tr>
+        <tr><td><strong>SocialSTG</strong></td><td class="best">56.03</td><td class="best">49.07</td><td class="best">55.72</td><td>88.66</td><td class="best">35.23</td></tr>
+        <tr><td rowspan="4">Social-MP3D<br>(zero-shot)</td><td>A*</td><td>43.85</td><td>42.89</td><td>43.85</td><td>90.04</td><td>55.21</td></tr>
+        <tr><td>ORCA</td><td>38.17</td><td>33.79</td><td>37.36</td><td class="best">93.42</td><td>44.16</td></tr>
+        <tr><td>Falcon</td><td>41.32</td><td>35.22</td><td>41.24</td><td>89.53</td><td>43.85</td></tr>
+        <tr><td><strong>SocialSTG</strong></td><td class="best">53.00</td><td class="best">45.81</td><td class="best">52.99</td><td>89.39</td><td class="best">35.33</td></tr>
+      </tbody></table></div>
+      <p class="table-note">SocialSTG improves completion, success-weighted efficiency, and collision rate over Falcon on both the in-domain benchmark and zero-shot transfer. PSC remains below classical planners, separating collision avoidance from maximum interpersonal clearance.</p>
+
+      <h3 class="title is-4 mt-6">Component ablations on Social-HM3D</h3>
+      <div class="result-table-wrap"><table class="result-table"><thead><tr><th>Variant</th><th>SR ↑</th><th>SPL ↑</th><th>STL ↑</th><th>PSC ↑</th><th>HCR ↓</th></tr></thead><tbody>
+        <tr><td><strong>Full</strong></td><td class="best">56.03</td><td class="best">49.07</td><td class="best">55.72</td><td>88.66</td><td>35.23</td></tr>
+        <tr><td>w/o Motion Features</td><td>54.84</td><td>46.51</td><td>54.17</td><td class="best">89.31</td><td class="best">35.10</td></tr>
+        <tr><td>w/o Uncertainty Gate</td><td>52.58</td><td>45.73</td><td>52.36</td><td>88.44</td><td>36.21</td></tr>
+        <tr><td>w/o Track Memory</td><td>48.25</td><td>41.99</td><td>47.89</td><td>88.73</td><td>39.39</td></tr>
+        <tr><td>w/o Graph</td><td>53.36</td><td>44.35</td><td>52.82</td><td>88.36</td><td>37.75</td></tr>
+        <tr><td>Falcon Auxiliary Tasks</td><td>52.38</td><td>45.52</td><td>51.82</td><td>89.08</td><td>35.40</td></tr>
+      </tbody></table></div>
+      <p class="table-note">Removing track memory causes the largest drop in completion and efficiency. Uncertainty gating, graph–visual fusion, motion features, and graph-aligned auxiliary supervision contribute complementary gains.</p>
+
+      <h3 class="title is-4 mt-6">Cafeteria digital twin</h3>
+      <div class="columns is-variable is-5 is-vcentered">
+        <div class="column is-6"><figure class="paper-figure mt-0"><img src="static/images/cafeteria.png" alt="Reconstructed cafeteria digital twin with quadruped robot and pedestrian models." loading="lazy"><figcaption>Interaction context in the reconstructed cafeteria digital twin.</figcaption></figure></div>
+        <div class="column is-6"><p class="table-note">Scene-specific adaptation improves completion and efficiency for both policies. Adapted SocialSTG retains the advantage over adapted Falcon in SR, SPL, STL, and HCR, while Falcon(seen) has the highest PSC.</p></div>
+      </div>
+      <div class="result-table-wrap"><table class="result-table"><thead><tr><th>Method</th><th>SR ↑</th><th>SPL ↑</th><th>STL ↑</th><th>PSC ↑</th><th>HCR ↓</th></tr></thead><tbody>
+        <tr><td>A*</td><td>41.00</td><td>40.23</td><td>41.00</td><td>89.24</td><td>59.00</td></tr>
+        <tr><td>ORCA</td><td>42.00</td><td>38.02</td><td>41.80</td><td>89.17</td><td>51.00</td></tr>
+        <tr><td>NavDP†</td><td>43.00</td><td>38.40</td><td>43.00</td><td class="best">90.67</td><td>41.00</td></tr>
+        <tr><td>LoGoPlanner†</td><td>12.00</td><td>9.24</td><td>10.82</td><td>89.24</td><td>61.00</td></tr>
+        <tr><td>Falcon</td><td>5.00</td><td>3.54</td><td>4.09</td><td>89.79</td><td>59.00</td></tr>
+        <tr><td><strong>SocialSTG</strong></td><td>10.00</td><td>7.57</td><td>9.17</td><td>87.48</td><td>57.00</td></tr>
+        <tr><td>Falcon (seen)</td><td>59.00</td><td>49.32</td><td>59.00</td><td class="best">91.90</td><td>33.00</td></tr>
+        <tr><td><strong>SocialSTG (seen)</strong></td><td class="best">65.00</td><td class="best">55.49</td><td class="best">65.00</td><td>90.74</td><td class="best">30.00</td></tr>
+      </tbody></table></div>
+      <p class="table-note">† NavDP and LoGoPlanner use their official terminal-distance success criterion; all other methods use the strict 0.2 m STOP criterion.</p>
+    </div>
+  </section>
+
+  <section class="section soft-section anchor" id="qualitative">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered section-heading">Qualitative navigation</h2>
+      <p class="has-text-centered table-note">Synchronized egocentric RGB views and top-down maps show successful progress through pedestrian encounters and failures when separation becomes too small.</p>
+      <figure class="paper-figure"><img src="static/images/cases.png" alt="Synchronized success and failure cases from Social-HM3D and the cafeteria digital twin." loading="lazy"><figcaption>Success and failure cases across Social-HM3D and the cafeteria digital twin. Retained interaction context helps the policy continue route progress, but close encounters and premature stopping remain failure modes.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="section anchor" id="appendix">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered section-heading">Detailed case evidence</h2>
+      <p class="has-text-centered table-note">The appendix records how the qualitative cases were selected, replayed, and labeled.</p>
+      <article class="appendix-block"><h3 class="title is-5">Selection and replay</h3><p>The diagnostic collection contains 40 complete rollouts across 38 scenes, with success and failure strata covering efficient completion, contact-associated outcomes, time limits, strict-versus-reach success disagreements, and an initially unclassified failure. Four fresh multiview reruns are shown in the main figure; they were captured separately to obtain synchronized top-down and robot views.</p></article>
+      <article class="appendix-block"><h3 class="title is-5">Synchronized multiview capture</h3><p>Each frame contains robot RGB, depth, a rendered top-down view, a third-person view, a navigation map, physical poses, and outcome metrics. All views are rendered from the same simulator state with action and pedestrian state held fixed. Saved frame counts are 119 and 64 for the Social-HM3D success and failure, and 105 and 141 for the cafeteria success and failure.</p></article>
+      <article class="appendix-block"><h3 class="title is-5">Observed outcomes</h3><p>The Social-HM3D success passes an initial encounter and terminates at approximately 0.076 m from the goal with zero human contact. The Social-HM3D failure records a close encounter and human collision while the goal remains distant. The cafeteria success reaches approximately 0.092 m from the goal without contact; the cafeteria failure shows progress followed by a close pedestrian encounter and contact.</p></article>
+      <article class="appendix-block"><h3 class="title is-5">Additional failure modes</h3><p>One episode remains stalled until the time limit with unchanged goal distance and no human collision. Another terminates prematurely while the goal is approximately 9.87 m away. These cases show that collision avoidance alone does not guarantee task completion.</p></article>
+    </div>
+  </section>
+
+  <section class="section soft-section" id="citation">
+    <div class="container is-max-desktop has-text-centered">
+      <h2 class="title is-3 section-heading">Citation</h2>
+      <div class="status-box has-text-left"><i class="fas fa-lock mr-2"></i>Bibliographic metadata is withheld during double-blind review. The final citation and repository links will be added after acceptance.</div>
+    </div>
+  </section>
+
+  <footer class="footer has-background-white">
+    <div class="container is-max-desktop has-text-centered">
+      <p class="footer-note"><strong>SocialSTG</strong> · Anonymous project page for double-blind review.</p>
+      <p class="footer-note">Page structure adapted from the Academic Project Page template under CC BY-SA 4.0.</p>
+    </div>
+  </footer>
+</main>
+<script defer src="static/js/fontawesome.all.min.js"></script>
+<script defer src="static/js/index.js"></script>
+</body>
+</html>
